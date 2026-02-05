@@ -2,10 +2,10 @@
 node_modules/
 server/node_modules/
 
-# Database
-server/tsocial.db
-server/tsocial.db-shm
-server/tsocial.db-wal
+# Database (temporarily allowing for deployment)
+# server/tsocial.db
+# server/tsocial.db-shm
+# server/tsocial.db-wal
 
 # Build outputs
 dist/
