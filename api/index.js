@@ -3,7 +3,7 @@ import cors from 'cors';
 import morgan from 'morgan';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { db, execute } from './db.js';
+import { db, execute } from './_db.js';
 import { fileURLToPath } from 'url';
 
 const app = express();
