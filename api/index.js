@@ -8,7 +8,7 @@ import { fileURLToPath } from 'url';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-const JWT_SECRET = process.env.JWT_SECRET || 'tsocial-secret-key';
+const JWT_SECRET = process.env.JWT_SECRET || process.env.JWT_SECRET_KEY || 'tsocial-secret-key';
 
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
