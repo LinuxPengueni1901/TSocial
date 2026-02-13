@@ -35,6 +35,17 @@ app.get('/api/health', async (req, res) => {
     }
 });
 
+// --- Bcrypt Compatibility Test ---
+app.get('/api/test/bcrypt', async (req, res) => {
+    try {
+        const hash = await bcrypt.hash('test', 10);
+        const match = await bcrypt.compare('test', hash);
+        res.json({ status: 'ok', hash: 'generated', match });
+    } catch (error) {
+        res.status(500).json({ status: 'error', message: 'Bcrypt failed', error: error.message });
+    }
+});
+
 // --- Middleware ---
 
 const authMiddleware = async (req, res, next) => {
@@ -81,7 +92,9 @@ const adminMiddleware = async (req, res, next) => {
 // Register
 app.post('/api/auth/register', async (req, res) => {
     const { name, handle, password } = req.body;
+    console.log(`[Auth] Register attempt for handle: ${handle}`);
     try {
+        if (!password) return res.status(400).json({ error: 'Şifre gereklidir.' });
         const hashedPassword = await bcrypt.hash(password, 10);
         const result = await execute(`
             INSERT INTO users (name, handle, password, joinDate, followers, following, postsCount)
