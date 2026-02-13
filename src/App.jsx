@@ -40,35 +40,39 @@ const GuestRoute = ({ children }) => {
   return children;
 };
 
+import ErrorBoundary from "./components/ErrorBoundary";
+
 function App() {
   return (
-    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-      <AuthProvider>
-        <PostProvider>
-          <BrowserRouter>
-            <Routes>
-              {/* Public / Guest Routes */}
-              <Route path="/login" element={<GuestRoute><LoginPage /></GuestRoute>} />
-              <Route path="/register" element={<GuestRoute><RegisterPage /></GuestRoute>} />
+    <ErrorBoundary>
+      <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+        <AuthProvider>
+          <PostProvider>
+            <BrowserRouter>
+              <Routes>
+                {/* Public / Guest Routes */}
+                <Route path="/login" element={<GuestRoute><LoginPage /></GuestRoute>} />
+                <Route path="/register" element={<GuestRoute><RegisterPage /></GuestRoute>} />
 
-              {/* Partially Public Routes (Feed/Explore visible) */}
-              <Route element={<MainLayout />}>
-                <Route path="/" element={<Home />} />
-                <Route path="/explore" element={<Explore />} />
+                {/* Partially Public Routes (Feed/Explore visible) */}
+                <Route element={<MainLayout />}>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/explore" element={<Explore />} />
 
-                {/* Protected Routes */}
-                <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-                <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
-                <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
-                <Route path="/bookmarks" element={<ProtectedRoute><Bookmarks /></ProtectedRoute>} />
-                <Route path="/admin" element={<AdminRoute><Admin /></AdminRoute>} />
-                <Route path="*" element={<div className="p-10 text-center">Sayfa bulunamadı</div>} />
-              </Route>
-            </Routes>
-          </BrowserRouter>
-        </PostProvider>
-      </AuthProvider>
-    </ThemeProvider>
+                  {/* Protected Routes */}
+                  <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+                  <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
+                  <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
+                  <Route path="/bookmarks" element={<ProtectedRoute><Bookmarks /></ProtectedRoute>} />
+                  <Route path="/admin" element={<AdminRoute><Admin /></AdminRoute>} />
+                  <Route path="*" element={<div className="p-10 text-center">Sayfa bulunamadı</div>} />
+                </Route>
+              </Routes>
+            </BrowserRouter>
+          </PostProvider>
+        </AuthProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
   );
 }
 

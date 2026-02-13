@@ -10,17 +10,29 @@ export function AuthProvider({ children }) {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (token) {
-            localStorage.setItem('token', token);
-            // In a real app, we'd fetch the user profile here to verify the token
-            const savedUser = JSON.parse(localStorage.getItem('user'));
-            if (savedUser) setUser(savedUser);
-        } else {
+        try {
+            if (token) {
+                localStorage.setItem('token', token);
+                const savedUserString = localStorage.getItem('user');
+                if (savedUserString && savedUserString !== 'undefined') {
+                    const savedUser = JSON.parse(savedUserString);
+                    if (savedUser) setUser(savedUser);
+                }
+            } else {
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                setUser(null);
+            }
+        } catch (error) {
+            console.error("Auth context initialization error:", error);
+            // Clear potentially corrupted data
             localStorage.removeItem('token');
             localStorage.removeItem('user');
+            setToken(null);
             setUser(null);
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
     }, [token]);
 
     const login = async (handle, password) => {
@@ -98,9 +110,13 @@ export function AuthProvider({ children }) {
         }
     };
 
+    if (loading) {
+        return <div className="min-h-screen bg-background flex items-center justify-center text-primary font-bold animate-pulse">TSocial Başlatılıyor...</div>;
+    }
+
     return (
         <AuthContext.Provider value={{ user, token, login, register, logout, submitAppeal, authenticated: !!token, loading }}>
-            {!loading && children}
+            {children}
         </AuthContext.Provider>
     );
 }
