@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Users, FileText, TrendingUp, ShieldAlert, Trash2, Search, Shield } from 'lucide-react';
 import clsx from 'clsx';
 
-const API_URL = "http://localhost:5000/api";
+import { API_URL } from '../config';
 
 export function Admin() {
     const [stats, setStats] = useState({ totalUsers: 0, totalPosts: 0, postsToday: 0 });

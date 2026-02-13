@@ -3,6 +3,7 @@ import { Search as SearchIcon, TrendingUp, MoreHorizontal, Sparkles } from 'luci
 import { Post } from '../components/Post';
 import clsx from 'clsx';
 import { usePosts } from '../context/PostContext';
+import { API_URL } from '../config';
 
 const CATEGORIES = ['Sana Özel', 'Gündem', 'Haberler', 'Spor', 'Eğlence'];
 
@@ -17,7 +18,7 @@ export function Explore() {
         setLoading(true);
         try {
             // Only search if user explicitly typed a query
-            const res = await fetch(`http://localhost:5000/api/explore${q ? `?q=${q}` : ''}`);
+            const res = await fetch(`${API_URL}/explore${q ? `?q=${q}` : ''}`);
             const result = await res.json();
 
             // For categories other than 'Sana Özel', we show filtered mock result or empty state

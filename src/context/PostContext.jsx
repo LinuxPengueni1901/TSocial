@@ -1,8 +1,7 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { useAuth } from "./AuthContext";
 
-const PostContext = createContext();
-const API_URL = "http://localhost:5000/api";
+import { API_URL } from "../config";
 
 export function PostProvider({ children }) {
     const { token: authToken } = useAuth();

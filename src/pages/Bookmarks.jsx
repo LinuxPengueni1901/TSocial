@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Post } from '../components/Post';
 import { Bookmark } from 'lucide-react';
 import { usePosts } from '../context/PostContext';
+import { API_URL } from '../config';
 
 export function Bookmarks() {
     const [bookmarks, setBookmarks] = useState([]);
@@ -17,7 +18,7 @@ export function Bookmarks() {
                     return;
                 }
 
-                const res = await fetch('http://localhost:5000/api/bookmarks', {
+                const res = await fetch(`${API_URL}/bookmarks`, {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }

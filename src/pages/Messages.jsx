@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useLocation, useNavigate } from 'react-router-dom';
 import clsx from 'clsx';
 
-const API_URL = "http://localhost:5000/api";
+import { API_URL } from '../config';
 
 export default function Messages() {
     const { user: authUser, token } = useAuth();

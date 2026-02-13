@@ -6,6 +6,7 @@ import clsx from 'clsx';
 import { useState, useEffect } from 'react';
 import { usePosts } from '../context/PostContext';
 import { useAuth } from '../context/AuthContext';
+import { API_URL } from '../config';
 
 export function Profile() {
     const navigate = useNavigate();
@@ -40,7 +41,7 @@ export function Profile() {
                 const token = localStorage.getItem('token');
                 const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
                 const endpoint = activeTab === 'Beğeniler' ? 'likes' : 'replies';
-                const res = await fetch(`http://localhost:5000/api/profile/${endpoint}?handle=${viewHandle}`, { headers });
+                const res = await fetch(`${API_URL}/profile/${endpoint}?handle=${viewHandle}`, { headers });
 
                 if (res.ok) {
                     const data = await res.json();
@@ -71,7 +72,7 @@ export function Profile() {
             }
 
             try {
-                const res = await fetch(`http://localhost:5000/api/profile?handle=${viewHandle}`);
+                const res = await fetch(`${API_URL}/profile?handle=${viewHandle}`);
                 if (res.ok) {
                     const data = await res.json();
                     setProfileData(data);
