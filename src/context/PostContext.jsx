@@ -3,6 +3,8 @@ import { useAuth } from "./AuthContext";
 
 import { API_URL } from "../config";
 
+const PostContext = createContext();
+
 export function PostProvider({ children }) {
     const { token: authToken } = useAuth();
     const [posts, setPosts] = useState([]);
