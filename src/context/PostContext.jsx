@@ -20,15 +20,15 @@ export function PostProvider({ children }) {
                 // Fetch posts
                 const postsRes = await fetch(`${API_URL}/posts`, { headers });
                 if (postsRes.ok && isMounted) {
-                    const postsData = await postsRes.json();
-                    setPosts(postsData);
+                    const postsData = await postsRes.json().catch(() => []);
+                    setPosts(Array.isArray(postsData) ? postsData : []);
                 }
 
                 // Fetch profile if logged in
                 if (token) {
                     const profileRes = await fetch(`${API_URL}/profile`, { headers });
                     if (profileRes.ok && isMounted) {
-                        const profileData = await profileRes.json();
+                        const profileData = await profileRes.json().catch(() => null);
                         setUserProfile(profileData);
                     } else if (profileRes.status === 401 && isMounted) {
                         setUserProfile(null);

@@ -30,22 +30,23 @@ export function AuthProvider({ children }) {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ handle, password })
             });
+            if (!res.ok) {
+                const errorData = await res.json().catch(() => ({}));
+                if (res.status === 403 && errorData.isSuspended) {
+                    return {
+                        success: false,
+                        error: errorData.error,
+                        isSuspended: true,
+                        suspensionDetails: errorData
+                    };
+                }
+                return { success: false, error: errorData.error || "Giriş yapılamadı." };
+            }
             const data = await res.json();
-            if (res.ok) {
-                setToken(data.token);
-                setUser({ handle: data.handle, name: data.name });
-                localStorage.setItem('user', JSON.stringify({ handle: data.handle, name: data.name }));
-                return { success: true };
-            }
-            if (res.status === 403 && data.isSuspended) {
-                return {
-                    success: false,
-                    error: data.error,
-                    isSuspended: true,
-                    suspensionDetails: data
-                };
-            }
-            return { success: false, error: data.error };
+            setToken(data.token);
+            setUser({ handle: data.handle, name: data.name });
+            localStorage.setItem('user', JSON.stringify({ handle: data.handle, name: data.name }));
+            return { success: true };
         } catch (err) {
             console.error("Login error:", err);
             return { success: false, error: "Sunucuya bağlanılamadı. Lütfen daha sonra tekrar deneyin." };
@@ -59,14 +60,15 @@ export function AuthProvider({ children }) {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name, handle, password })
             });
-            const data = await res.json();
-            if (res.ok) {
-                setToken(data.token);
-                setUser({ handle: data.handle, name: data.name });
-                localStorage.setItem('user', JSON.stringify({ handle: data.handle, name: data.name }));
-                return { success: true };
+            if (!res.ok) {
+                const errorData = await res.json().catch(() => ({}));
+                return { success: false, error: errorData.error || "Kayıt yapılamadı." };
             }
-            return { success: false, error: data.error };
+            const data = await res.json();
+            setToken(data.token);
+            setUser({ handle: data.handle, name: data.name });
+            localStorage.setItem('user', JSON.stringify({ handle: data.handle, name: data.name }));
+            return { success: true };
         } catch (err) {
             console.error("Register error:", err);
             return { success: false, error: "Sunucuya bağlanılamadı. Lütfen daha sonra tekrar deneyin." };

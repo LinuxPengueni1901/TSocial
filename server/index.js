@@ -634,6 +634,12 @@ app.put('/api/admin/users/:id/role', adminMiddleware, async (req, res) => {
     res.json({ success: true, isAdmin });
 });
 
-app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-});
+// Export for Vercel / Serverless
+module.exports = app;
+
+// Only listen if run directly (local development)
+if (require.main === module) {
+    app.listen(PORT, () => {
+        console.log(`Server running on http://localhost:${PORT}`);
+    });
+}
