@@ -78,7 +78,7 @@ export function AuthProvider({ children }) {
                 return {
                     success: false,
                     error: errorData.error || "Kayıt yapılamadı.",
-                    details: errorData.details
+                    details: errorData.details || `HTTP ${res.status}`
                 };
             }
             const data = await res.json();
@@ -88,7 +88,11 @@ export function AuthProvider({ children }) {
             return { success: true };
         } catch (err) {
             console.error("Register error:", err);
-            return { success: false, error: "Sunucuya bağlanılamadı. Lütfen daha sonra tekrar deneyin." };
+            return {
+                success: false,
+                error: "Sunucuya bağlanılamadı. Lütfen internetinizi kontrol edin.",
+                details: err.message
+            };
         }
     };
 

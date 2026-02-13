@@ -21,7 +21,8 @@ export function RegisterPage() {
         if (result.success) {
             navigate('/');
         } else {
-            setError(result.error || 'Kayıt başarısız oldu.');
+            // Show the main error and details if available
+            setError(result.details ? `${result.error} (${result.details})` : result.error);
         }
     };
 
