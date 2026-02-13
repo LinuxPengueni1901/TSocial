@@ -1,19 +1,19 @@
-require('dotenv').config();
-const { createClient } = require('@libsql/client');
+import 'dotenv/config';
+import { createClient } from '@libsql/client';
 
 // Initialize Turso client
-const db = createClient({
+export const db = createClient({
   url: process.env.TURSO_DATABASE_URL || 'file:tsocial.db',
   authToken: process.env.TURSO_AUTH_TOKEN,
 });
 
 // Helper function to execute queries
-async function execute(sql, params = []) {
+export async function execute(sql, params = []) {
   return await db.execute({ sql, args: params });
 }
 
 // Initialize database schema
-async function initializeDatabase() {
+export async function initializeDatabase() {
   try {
     // Create Users Table
     await execute(`
@@ -143,5 +143,3 @@ async function initializeDatabase() {
 
 // Initialize on module load
 initializeDatabase().catch(console.error);
-
-module.exports = { db, execute };

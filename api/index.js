@@ -1,9 +1,10 @@
-const express = require('express');
-const cors = require('cors');
-const morgan = require('morgan');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const { db, execute } = require('./db.cjs');
+import express from 'express';
+import cors from 'cors';
+import morgan from 'morgan';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import { db, execute } from './db.js';
+import { fileURLToPath } from 'url';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -429,8 +430,6 @@ app.get('/api/profile/replies', async (req, res) => {
     res.json(formattedPosts);
 });
 
-// (Moved app.listen to the bottom)
-
 // --- Explore & Search API ---
 
 app.get('/api/explore', async (req, res) => {
@@ -635,10 +634,11 @@ app.put('/api/admin/users/:id/role', adminMiddleware, async (req, res) => {
 });
 
 // Export for Vercel / Serverless
-module.exports = app;
+export default app;
 
 // Only listen if run directly (local development)
-if (require.main === module) {
+const isMain = process.argv[1] && process.argv[1] === fileURLToPath(import.meta.url);
+if (isMain) {
     app.listen(PORT, () => {
         console.log(`Server running on http://localhost:${PORT}`);
     });
