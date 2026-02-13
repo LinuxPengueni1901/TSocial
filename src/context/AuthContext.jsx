@@ -74,7 +74,12 @@ export function AuthProvider({ children }) {
             });
             if (!res.ok) {
                 const errorData = await res.json().catch(() => ({}));
-                return { success: false, error: errorData.error || "Kayıt yapılamadı." };
+                console.error("Registration failed:", res.status, errorData);
+                return {
+                    success: false,
+                    error: errorData.error || "Kayıt yapılamadı.",
+                    details: errorData.details
+                };
             }
             const data = await res.json();
             setToken(data.token);

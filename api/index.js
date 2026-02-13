@@ -14,6 +14,16 @@ app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(morgan('dev'));
 
+// --- Health Check ---
+app.get('/api/health', async (req, res) => {
+    try {
+        await execute('SELECT 1');
+        res.json({ status: 'ok', database: 'connected', timestamp: new Date().toISOString() });
+    } catch (error) {
+        res.status(500).json({ status: 'error', database: 'disconnected', error: error.message });
+    }
+});
+
 // --- Middleware ---
 
 const authMiddleware = async (req, res, next) => {
@@ -70,11 +80,21 @@ app.post('/api/auth/register', async (req, res) => {
         const token = jwt.sign({ id: Number(result.lastInsertRowid), handle }, JWT_SECRET, { expiresIn: '24h' });
         res.status(201).json({ token, handle, name });
     } catch (error) {
-        console.error('Registration error:', error);
-        if (error.code && (error.code.startsWith('SQLITE_CONSTRAINT') || error.code === 'ERR_SQL_CONSTRAINT')) {
-            return res.status(400).json({ error: 'Bu kullanıcı adı zaten alınmış.' });
+        console.error('Registration error details:', error);
+
+        // Handle specific SQLite constraints
+        if (error.code === 'SQLITE_CONSTRAINT' || error.message?.includes('UNIQUE constraint failed')) {
+            if (error.message?.includes('users.handle')) {
+                return res.status(400).json({ error: 'Bu kullanıcı adı zaten alınmış.' });
+            }
+            return res.status(400).json({ error: 'Bu bilgilerle zaten bir hesap mevcut.' });
         }
-        res.status(500).json({ error: 'Kayıt sırasında bir hata oluştu.' });
+
+        res.status(500).json({
+            error: 'Kayıt sırasında teknik bir hata oluştu.',
+            details: error.message,
+            code: error.code
+        });
     }
 });
 
@@ -643,3 +663,13 @@ if (isMain) {
         console.log(`Server running on http://localhost:${PORT}`);
     });
 }
+
+// Global error handler for Vercel
+app.use((err, req, res, next) => {
+    console.error('SERVER ERROR:', err);
+    res.status(500).json({
+        error: 'Sunucu tarafında beklenmedik bir hata oluştu.',
+        message: err.message,
+        stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+    });
+});
