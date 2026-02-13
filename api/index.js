@@ -17,9 +17,12 @@ app.use(morgan('dev'));
 // Ensure DB is initialized
 app.use(async (req, res, next) => {
     try {
-        await initializeDatabase();
+        if (process.env.TURSO_DATABASE_URL) {
+            await initializeDatabase();
+        }
         next();
     } catch (error) {
+        console.error("Initialization Error:", error);
         next(error);
     }
 });
@@ -691,8 +694,9 @@ app.put('/api/admin/users/:id/role', adminMiddleware, async (req, res) => {
 export default app;
 
 // Only listen if run directly (local development)
-const isMain = process.argv[1] && process.argv[1] === fileURLToPath(import.meta.url);
-if (isMain) {
+// Only listen if run directly (local development)
+const isMain = process.env.NODE_ENV !== 'production' || (process.argv[1] && process.argv[1] === fileURLToPath(import.meta.url));
+if (isMain && !process.env.VERCEL) {
     app.listen(PORT, () => {
         console.log(`Server running on http://localhost:${PORT}`);
     });

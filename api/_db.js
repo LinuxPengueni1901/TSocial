@@ -1,24 +1,30 @@
 import 'dotenv/config';
 import { createClient } from '@libsql/client';
 
-// Initialize Turso client
-if (!process.env.TURSO_DATABASE_URL) {
-  console.warn("WARNING: TURSO_DATABASE_URL is not set. Using local SQLite file (will be read-only on Vercel).");
-}
+// Lazy-initialized client
+let client = null;
 
-export const db = createClient({
-  url: process.env.TURSO_DATABASE_URL || 'file:tsocial.db',
-  authToken: process.env.TURSO_AUTH_TOKEN,
-});
+export const db = {
+  get client() {
+    if (!client) {
+      if (!process.env.TURSO_DATABASE_URL) {
+        throw new Error("TURSO_DATABASE_URL is missing! Please set it in Vercel.");
+      }
+      client = createClient({
+        url: process.env.TURSO_DATABASE_URL,
+        authToken: process.env.TURSO_AUTH_TOKEN,
+      });
+    }
+    return client;
+  }
+};
 
 // Helper function to execute queries
 export async function execute(sql, params = []) {
   try {
-    return await db.execute({ sql, args: params });
+    return await db.client.execute({ sql, args: params });
   } catch (error) {
-    if (!process.env.TURSO_DATABASE_URL) {
-      throw new Error(`DATABASE_ERROR: TURSO_DATABASE_URL is missing! Please set it in Vercel settings. Original error: ${error.message}`);
-    }
+    console.error("Database Execution Error:", error.message);
     throw error;
   }
 }
@@ -26,14 +32,15 @@ export async function execute(sql, params = []) {
 // Global flag to track initialization
 let isInitialized = false;
 
-// Initialize database schema
+// Initialize database schema (Lazy)
 export async function initializeDatabase() {
   if (isInitialized) return;
 
   if (!process.env.TURSO_DATABASE_URL) {
-    console.error("CRITICAL ERROR: TURSO_DATABASE_URL is not set.");
-    return; // Don't try to initialize local DB on Vercel
+    console.warn("DB skip: TURSO_DATABASE_URL is missing.");
+    return;
   }
+
   try {
     // Create Users Table
     await execute(`
@@ -141,16 +148,7 @@ export async function initializeDatabase() {
         '1',
         1 // is_admin
       ]);
-
-      const tsocialUserResult = await execute('SELECT id FROM users WHERE handle = ?', ['tsocial']);
-      const tsocialUser = tsocialUserResult.rows[0];
-
-      await execute(`
-        INSERT INTO posts (user_id, username, handle, avatar, time, content, likes, comments, reposts, views)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `, [tsocialUser.id, 'TSocial Ekibi', 'tsocial', null, 'Az önce', 'TSocial yayına girdi! Yeni nesil sosyal ağ deneyimine hazır mısınız? 🚀 #TSocial #Hoşgeldiniz', 0, 0, 0, '0']);
     } else {
-      // Ensure existing tsocial user has admin rights
       await execute('UPDATE users SET is_admin = 1 WHERE handle = ?', ['tsocial']);
     }
 
@@ -158,6 +156,5 @@ export async function initializeDatabase() {
     isInitialized = true;
   } catch (error) {
     console.error("Database initialization error:", error);
-    // Silent fail if initialization fails, but routes will report connectivity issues
   }
 }
