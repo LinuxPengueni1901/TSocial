@@ -3,7 +3,7 @@ const cors = require('cors');
 const morgan = require('morgan');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { db, execute } = require('./db');
+const { db, execute } = require('./db.cjs');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
