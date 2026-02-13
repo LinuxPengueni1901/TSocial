@@ -3,7 +3,7 @@ import cors from 'cors';
 import morgan from 'morgan';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { db, execute } from './_db.js';
+import { db, execute, initializeDatabase } from './_db.js';
 import { fileURLToPath } from 'url';
 
 const app = express();
@@ -13,6 +13,16 @@ const JWT_SECRET = process.env.JWT_SECRET || 'tsocial-secret-key';
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(morgan('dev'));
+
+// Ensure DB is initialized
+app.use(async (req, res, next) => {
+    try {
+        await initializeDatabase();
+        next();
+    } catch (error) {
+        next(error);
+    }
+});
 
 // --- Health Check ---
 app.get('/api/health', async (req, res) => {

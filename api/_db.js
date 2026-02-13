@@ -13,11 +13,27 @@ export const db = createClient({
 
 // Helper function to execute queries
 export async function execute(sql, params = []) {
-  return await db.execute({ sql, args: params });
+  try {
+    return await db.execute({ sql, args: params });
+  } catch (error) {
+    if (!process.env.TURSO_DATABASE_URL) {
+      throw new Error(`DATABASE_ERROR: TURSO_DATABASE_URL is missing! Please set it in Vercel settings. Original error: ${error.message}`);
+    }
+    throw error;
+  }
 }
+
+// Global flag to track initialization
+let isInitialized = false;
 
 // Initialize database schema
 export async function initializeDatabase() {
+  if (isInitialized) return;
+
+  if (!process.env.TURSO_DATABASE_URL) {
+    console.error("CRITICAL ERROR: TURSO_DATABASE_URL is not set.");
+    return; // Don't try to initialize local DB on Vercel
+  }
   try {
     // Create Users Table
     await execute(`
@@ -139,11 +155,9 @@ export async function initializeDatabase() {
     }
 
     console.log("Database initialized successfully.");
+    isInitialized = true;
   } catch (error) {
     console.error("Database initialization error:", error);
-    throw error;
+    // Silent fail if initialization fails, but routes will report connectivity issues
   }
 }
-
-// Initialize on module load
-initializeDatabase().catch(console.error);
