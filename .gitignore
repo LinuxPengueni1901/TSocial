@@ -2,10 +2,11 @@
 node_modules/
 server/node_modules/
 
-# Database (temporarily allowing for deployment)
-# server/tsocial.db
-# server/tsocial.db-shm
-# server/tsocial.db-wal
+# Database
+server/tsocial.db
+server/tsocial.db-shm
+server/tsocial.db-wal
+server/.env
 
 # Build outputs
 dist/
@@ -30,3 +31,5 @@ npm-debug.log*
 # Test scripts
 server/test_schema.js
 server/migrate.js
+server/test_turso.js
+server/index.js.backup
