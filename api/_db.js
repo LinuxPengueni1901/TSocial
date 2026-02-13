@@ -2,6 +2,10 @@ import 'dotenv/config';
 import { createClient } from '@libsql/client';
 
 // Initialize Turso client
+if (!process.env.TURSO_DATABASE_URL) {
+  console.warn("WARNING: TURSO_DATABASE_URL is not set. Using local SQLite file (will be read-only on Vercel).");
+}
+
 export const db = createClient({
   url: process.env.TURSO_DATABASE_URL || 'file:tsocial.db',
   authToken: process.env.TURSO_AUTH_TOKEN,

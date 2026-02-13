@@ -17,10 +17,21 @@ app.use(morgan('dev'));
 // --- Health Check ---
 app.get('/api/health', async (req, res) => {
     try {
-        await execute('SELECT 1');
-        res.json({ status: 'ok', database: 'connected', timestamp: new Date().toISOString() });
+        const dbCheck = await execute('SELECT 1').catch(e => ({ error: e.message }));
+        res.json({
+            status: 'ok',
+            database: dbCheck.error ? 'disconnected' : 'connected',
+            dbError: dbCheck.error,
+            env: {
+                hasUrl: !!process.env.TURSO_DATABASE_URL,
+                hasToken: !!process.env.TURSO_AUTH_TOKEN,
+                hasJwtSecret: !!process.env.JWT_SECRET,
+                nodeEnv: process.env.NODE_ENV
+            },
+            timestamp: new Date().toISOString()
+        });
     } catch (error) {
-        res.status(500).json({ status: 'error', database: 'disconnected', error: error.message });
+        res.status(500).json({ status: 'error', error: error.message });
     }
 });
 
