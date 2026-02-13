@@ -1,9 +1,9 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { useAuth } from "./AuthContext";
-
 import { API_URL } from "../config";
 
-const PostContext = createContext();
+// Define context at the top to avoid any potential initialization issues
+const PostContext = createContext(null);
 
 export function PostProvider({ children }) {
     const { token: authToken } = useAuth();
@@ -11,7 +11,6 @@ export function PostProvider({ children }) {
     const [userProfile, setUserProfile] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    // Initial Data Fetch & Auth Sync
     useEffect(() => {
         let isMounted = true;
         const fetchData = async () => {
@@ -39,7 +38,7 @@ export function PostProvider({ children }) {
                     setUserProfile(null);
                 }
             } catch (error) {
-                console.error("Data fetch error:", error);
+                console.error("Data fetch error in PostContext:", error);
             } finally {
                 if (isMounted) setLoading(false);
             }
@@ -63,7 +62,6 @@ export function PostProvider({ children }) {
             });
             const newPost = await res.json();
 
-            // If it's a reply, update parent post comments count locally
             if (parent_id) {
                 setPosts(prev => prev.map(p =>
                     p.id === parent_id
@@ -86,9 +84,7 @@ export function PostProvider({ children }) {
 
             const res = await fetch(`${API_URL}/posts/${id}/like`, {
                 method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
+                headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await res.json();
 
@@ -119,19 +115,14 @@ export function PostProvider({ children }) {
 
             const res = await fetch(`${API_URL}/posts/${id}/bookmark`, {
                 method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
+                headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await res.json();
 
             if (data.success) {
                 setPosts(prev => prev.map(post => {
                     if (post.id === id) {
-                        return {
-                            ...post,
-                            isBookmarked: data.bookmarked
-                        };
+                        return { ...post, isBookmarked: data.bookmarked };
                     }
                     return post;
                 }));
@@ -144,9 +135,7 @@ export function PostProvider({ children }) {
     const updateProfile = async (newData) => {
         try {
             const token = localStorage.getItem('token');
-            // Optimistic update
             setUserProfile(prev => ({ ...prev, ...newData }));
-
             await fetch(`${API_URL}/profile`, {
                 method: 'PUT',
                 headers: {
@@ -160,15 +149,18 @@ export function PostProvider({ children }) {
         }
     };
 
-    if (loading) {
-        return <div className="min-h-screen bg-background flex items-center justify-center text-primary font-bold">Yükleniyor...</div>;
-    }
-
     return (
-        <PostContext.Provider value={{ posts, addPost, likePost, bookmarkPost, userProfile, updateProfile }}>
+        <PostContext.Provider value={{ posts, addPost, likePost, bookmarkPost, userProfile, updateProfile, loading }}>
             {children}
         </PostContext.Provider>
     );
 }
 
-export const usePosts = () => useContext(PostContext);
+export const usePosts = () => {
+    const context = useContext(PostContext);
+    if (!context) {
+        // Return a default state to avoid property access errors if called outside provider
+        return { posts: [], loading: true, userProfile: null };
+    }
+    return context;
+};
